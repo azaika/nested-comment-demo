@@ -26,13 +26,13 @@ lexer! {
     r"\+" => LexState::Token(Tok::Plus),
     r"\-" => LexState::Token(Tok::Minus),
     r"\*" => LexState::Token(Tok::Star),
-    "/" => LexState::Token(Tok::Slash),
+    r"/" => LexState::Token(Tok::Slash),
     r"\(" => LexState::Token(Tok::LPar),
     r"\)" => LexState::Token(Tok::RPar),
-    "let" => LexState::Token(Tok::Let),
-    "=" => LexState::Token(Tok::Equal),
-    ";" => LexState::Token(Tok::SemiColon),
-    "print" => LexState::Token(Tok::Print),
+    r"let" => LexState::Token(Tok::Let),
+    r"=" => LexState::Token(Tok::Equal),
+    r";" => LexState::Token(Tok::SemiColon),
+    r"print" => LexState::Token(Tok::Print),
     r"[a-z][0-9A-Za-z_]*" => LexState::Token(Tok::Ident(text)),
     r"[0-9]+" => {
         if let Ok(i) = text.parse() {
@@ -44,6 +44,7 @@ lexer! {
     r"." => LexState::Err(Error::UnrecognizedToken(text.to_owned()))
 }
 
+#[derive(Debug, Clone)]
 pub struct Lexer<'input> {
     original: &'input str,
     remaining: &'input str
