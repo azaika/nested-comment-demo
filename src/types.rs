@@ -17,7 +17,8 @@ impl<T> Spanned<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Tok<'a> {
-    Var(&'a str),
+    Num(i64),
+    Ident(&'a str),
     Plus,
     Minus,
     Star,
@@ -40,6 +41,7 @@ pub enum BinOpKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExprKind<'a> {
+    Num(i64),
     Var(&'a str),
     BinOp(BinOpKind, Box<Expr<'a>>, Box<Expr<'a>>),
 }
