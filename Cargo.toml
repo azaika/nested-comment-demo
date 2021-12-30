@@ -6,3 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+plex = "0.2.5"
+lalrpop-util = "0.19.6"
+regex = "1"
+
+[build-dependencies]
+lalrpop = "0.19.6"
