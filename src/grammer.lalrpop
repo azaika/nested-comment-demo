@@ -1,0 +1,68 @@
+use crate::types::*;
+use crate::lexer::Error as LexError;
+
+grammar<'input>;
+extern {
+    type Location = usize;
+    type Error = Spanned<LexError>;
+
+    // lalrpop の構文定義中で使う「文字列⇒トークン」の置換表
+    enum Tok<'input> {
+        "(" => Tok::LPar,
+        ")" => Tok::RPar,
+        Num => Tok::Num(<i64>),
+        Ident => Tok::Ident(<&'input str>),
+        "-" => Tok::Minus,
+        "+" => Tok::Plus,
+        "*" => Tok::Star,
+        "/" => Tok::Slash,
+        "let" => Tok::Let,
+        "=" => Tok::Equal,
+        ";" => Tok::SemiColon,
+        "print" => Tok::Print,
+    }
+}
+
+TermOp: BinOpKind = {
+    "+" => BinOpKind::Add,
+    "-" => BinOpKind::Sub,
+};
+
+FactorOp: BinOpKind = {
+    "*" => BinOpKind::Mul,
+    "/" => BinOpKind::Div
+};
+
+Atom: Box<Expr<'input>> = {
+    "(" <e:Term> ")" => e,
+    <l:@L> <x:Num> <r:@R> => Box::new(Spanned::new(ExprKind::Num(x), (l, r))),
+    <l:@L> <x:Ident> <r:@R> => Box::new(Spanned::new(ExprKind::Var(x), (l, r))),
+}
+
+Term: Box<Expr<'input>> = {
+    #[precedence(level="0")]
+    Atom,
+
+    // * /
+    #[precedence(level="1")]
+    #[assoc(side="left")]
+    <l:@L> <e1:Term> <op:FactorOp> <e2:Term> <r:@R> => Box::new(Spanned::new(ExprKind::BinOp(op, e1, e2), (l, r))),
+
+    // + -
+    #[precedence(level="2")]
+    #[assoc(side="left")]
+    <l:@L> <e1:Term> <op:TermOp> <e2:Term> <r:@R> => Box::new(Spanned::new(ExprKind::BinOp(op, e1, e2), (l, r))),
+}
+
+Statement: Stmt<'input> = {
+    <l:@L> "let" <x: Ident> "=" <t:Term> ";" <r:@R> => Spanned::new(StmtKind::Let(x, t), (l, r)),
+    <l:@L> "print" <t:Atom> ";" <r:@R> => Spanned::new(StmtKind::Print(t), (l, r)),
+}
+
+pub Program: Vec<Stmt<'input>> = {
+    Statement => vec![<>],
+    <mut p:Program> <s:Statement> => {
+        p.push(s);
+        p
+    }
+}

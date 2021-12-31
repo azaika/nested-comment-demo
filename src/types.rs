@@ -51,7 +51,7 @@ pub type Expr<'a> = Spanned<ExprKind<'a>>;
 #[derive(Debug, Clone, PartialEq)]
 pub enum StmtKind<'a> {
     Let(&'a str, Box<Expr<'a>>),
-    Print(Expr<'a>),
+    Print(Box<Expr<'a>>),
 }
 
 pub type Stmt<'a> = Spanned<StmtKind<'a>>;

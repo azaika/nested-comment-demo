@@ -50,6 +50,15 @@ pub struct Lexer<'input> {
     remaining: &'input str
 }
 
+impl<'input> Lexer<'input> {
+    pub fn new(s: &'input str) -> Self {
+        Lexer {
+            original: s,
+            remaining: s,
+        }
+    }
+}
+
 // lalrpop が受理する形式に合わせる
 type Result<'a> = std::result::Result<(usize, Tok<'a>, usize), Spanned<Error>>;
 
