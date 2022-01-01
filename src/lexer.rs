@@ -13,15 +13,33 @@ pub enum Error {
     TooLargeInteger(String)
 }
 
+enum CommentState {
+    ReOpen,
+    Close,
+    Continue
+}
+
+lexer! {
+    fn comment_consume(_text: 'input) -> CommentState;
+    
+    r"\(\*" => CommentState::ReOpen,
+    r"\*\)" => CommentState::Close,
+    r"." => CommentState::Continue
+}
+
+
+
 enum LexState<'a> {
     Token(Tok<'a>),
     Skip,
+    CommentBegin,
     Err(Error)
 }
 
 lexer! {
     fn next_token(text: 'input) -> LexState<'input>;
 
+    r"\(\*" => LexState::CommentBegin,
     r"[\t\n\r ]" => LexState::Skip,
     r"\+" => LexState::Token(Tok::Plus),
     r"\-" => LexState::Token(Tok::Minus),
@@ -57,6 +75,34 @@ impl<'input> Lexer<'input> {
             remaining: s,
         }
     }
+
+    // コメントの括弧が正しく対応しているかを返す
+    fn skip_comment(&mut self) -> bool {
+        loop {
+            use CommentState::*;
+            let state = comment_consume(self.remaining);
+            if state.is_none() {
+                // EOF
+                return false;
+            }
+            
+            let (state, remaining) = state.unwrap();
+
+            self.remaining = remaining;                
+            match state {
+                ReOpen => {
+                    if self.skip_comment() {
+                        continue;
+                    }
+                    return false;
+                },
+                Close => {
+                    return true;
+                },
+                Continue => continue
+            }
+        }
+    }
 }
 
 // lalrpop が受理する形式に合わせる
@@ -75,6 +121,7 @@ impl<'input> Iterator for Lexer<'input> {
 
             let (state, remaining) = state.unwrap();
 
+            // 読んだ箇所を更新
             let lo = self.original.len() - self.remaining.len();
             let hi = self.original.len() - remaining.len();
             self.remaining = remaining;
@@ -89,6 +136,12 @@ impl<'input> Iterator for Lexer<'input> {
                     // エラーであればそれを返す
                     return Some(Err(Spanned::new(e, (lo, hi))));
                 },
+                LexState::CommentBegin => {
+                    if self.skip_comment() {
+                        continue;
+                    }
+                    return Some(Err(Spanned::new(Error::UnclosedComment, (lo, hi))));
+                }
             }
         }
     }

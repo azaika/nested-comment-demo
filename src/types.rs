@@ -1,3 +1,4 @@
+// ソースコード中の位置情報を範囲で表す
 pub type Span = (usize, usize);
 
 #[derive(Debug, Clone, PartialEq)]
@@ -15,6 +16,7 @@ impl<T> Spanned<T> {
     }
 }
 
+// レキサーで用いるトークン
 #[derive(Debug, Clone, PartialEq)]
 pub enum Tok<'a> {
     Num(i64),
@@ -31,6 +33,7 @@ pub enum Tok<'a> {
     Print,
 }
 
+// 二項演算の種類
 #[derive(Debug, Clone, PartialEq)]
 pub enum BinOpKind {
     Add,
