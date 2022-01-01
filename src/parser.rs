@@ -2,6 +2,10 @@ use thiserror::Error;
 use crate::types::{Stmt, Tok, Spanned};
 use crate::lexer;
 
+lalrpop_mod!(pub grammer);
+
+type LalrpopError<'a> = lalrpop_util::ParseError<usize, Tok<'a>, Spanned<lexer::Error>>;
+
 #[derive(Debug, Clone, PartialEq, Error)]
 pub enum ErrorKind<'a> {
     #[error("parse error: unexpected end of file")]
@@ -16,10 +20,7 @@ pub enum ErrorKind<'a> {
 
 pub type Error<'a> = Spanned<ErrorKind<'a>>;
 
-type LalrpopError<'a> = lalrpop_util::ParseError<usize, Tok<'a>, Spanned<lexer::Error>>;
-
-lalrpop_mod!(pub grammer);
-
+// lalrpop のエラーを自前のエラー型に変換
 fn convert_error(err: LalrpopError) -> Error {
     match err {
         LalrpopError::InvalidToken { location } => Spanned::new(ErrorKind::Eof, (location, location)),
@@ -29,8 +30,8 @@ fn convert_error(err: LalrpopError) -> Error {
             token: (lo, tok, hi),
             expected
         } => {
-            // take only first expected candidate
             assert!(!expected.is_empty());
+            // 最初の候補だけ見る
             let expected = expected[0].clone();
 
             Spanned::new(ErrorKind::UnrecognizedToken(tok, expected), (lo, hi))

@@ -27,8 +27,6 @@ lexer! {
     r"." => CommentState::Continue
 }
 
-
-
 enum LexState<'a> {
     Token(Tok<'a>),
     Skip,
@@ -76,6 +74,7 @@ impl<'input> Lexer<'input> {
         }
     }
 
+    // コメント中で用いるレキサーの状態遷移
     // コメントの括弧が正しく対応しているかを返す
     fn skip_comment(&mut self) -> bool {
         loop {
@@ -140,6 +139,7 @@ impl<'input> Iterator for Lexer<'input> {
                     if self.skip_comment() {
                         continue;
                     }
+                    // コメントが閉じていない
                     return Some(Err(Spanned::new(Error::UnclosedComment, (lo, hi))));
                 }
             }

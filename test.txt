@@ -1,7 +1,9 @@
+(* x = 3 *)
 let x = 1 + 2;
 let y = x * 4;
-let z = x + y * x;
-print (x + y + z);
+let z = x + y * x; (* 39 *)
+print (x + y + z); (* 54 *)
 let w = z / 3 + y;
+(* 計算の (* 結果は *) 0 になる *)
 let ans = x * (y - w) + y;
 print ans;

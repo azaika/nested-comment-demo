@@ -42,6 +42,8 @@ pub enum BinOpKind {
     Div,
 }
 
+// 式
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExprKind<'a> {
     Num(i64),
@@ -50,6 +52,8 @@ pub enum ExprKind<'a> {
 }
 
 pub type Expr<'a> = Spanned<ExprKind<'a>>;
+
+// 文
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum StmtKind<'a> {
